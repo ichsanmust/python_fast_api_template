@@ -42,7 +42,10 @@ Install semua pustaka yang dibutuhkan dari file requirements.txt:
 
     pip install -r requirements.txt
 
-6. Jalankan Aplikasi
+6. Buat Database di mysql dan sesuaikan file .env, import file sql di mysql/import.sql ke database tersebut
+--------------------
+
+7. Jalankan Aplikasi
 --------------------
 Gunakan perintah berikut untuk menjalankan aplikasi secara lokal di port 8000:
 
@@ -51,10 +54,8 @@ Gunakan perintah berikut untuk menjalankan aplikasi secara lokal di port 8000:
 Lalu buka browser dan akses: http://localhost:9000 atau http://0.0.0.0:9000
 Untuk Docs / Swagger : http://localhost:9000/docs atau http://0.0.0.0:9000/docs
 
-7. Buat Database di mysql dan sesuaikan file .env, import file sql di mysql/import.sql ke database tersebut
---------------------
 
-8. Test dengan endpoint /auth/signup (create user)
+9. Test dengan endpoint /auth/signup (create user)
 --------------------
 
 Catatan:
