@@ -104,7 +104,7 @@ def module_upload_data_check_progress(job_id: int, db: Session = Depends(databas
 
 
 @router.post("/upload-data", response_model=UploadDataSchema.Paginated, description="Get Data UP=ploaded Data with dynamic filter and sorting")
-def master_data_user_read_all_search_dynamic(
+def module_upload_data_read_data_search_post(
     params: UploadDataSchema.SearchRequest,
     db: Session = Depends(database.get_db)
 ):
