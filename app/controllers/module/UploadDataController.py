@@ -5,29 +5,116 @@ from app.models.module.Job import Job
 from app.core.database import Base, SessionLocal
 
 
+# def import_excel_worker(job_id: int, filepath: str):
+#     db: Session = SessionLocal()
+#     try:
+#         job = db.query(Job).get(job_id)
+#         job.status = "processing"
+#         db.commit()
+
+#         df = pd.read_excel(filepath)
+#         job.total_rows = len(df)
+#         db.commit()
+
+#         for i, row in df.iterrows():
+#             data = UploadData(
+#                 nama=row['nama'],
+#                 alamat=row['alamat'],
+#                 umur=int(row['umur']),
+#                 tanggal_lahir=pd.to_datetime(row['tanggal_lahir']),
+#             )
+#             db.add(data)
+#             db.commit()
+
+#             # update progress
+#             job.processed_rows = i + 1
+#             db.commit()
+
+#         job.status = "completed"
+#         db.commit()
+#     except Exception as e:
+#         job.status = "failed"
+#         job.error = str(e)
+#         db.commit()
+#     finally:
+#         db.close()
+
+# def import_excel_worker(job_id: int, filepath: str):
+#     db: Session = SessionLocal()
+#     try:
+#         job = db.query(Job).get(job_id)
+#         job.status = "processing"
+#         db.commit()
+
+#         df = pd.read_excel(filepath)
+#         job.total_rows = len(df)
+#         db.commit()
+
+#         batch_size = 1000
+#         total_rows = len(df)
+
+#         for start in range(0, total_rows, batch_size):
+#             end = min(start + batch_size, total_rows)
+#             batch_df = df.iloc[start:end]
+
+#             # ubah ke list of dict
+#             mappings = []
+#             for _, row in batch_df.iterrows():
+#                 mappings.append({
+#                     "nama": row["nama"],
+#                     "alamat": row["alamat"],
+#                     "umur": int(row["umur"]),
+#                     "tanggal_lahir": pd.to_datetime(row["tanggal_lahir"]),
+#                 })
+
+#             db.bulk_insert_mappings(UploadData, mappings)
+#             db.commit()
+
+#             # update progress
+#             job.processed_rows = end
+#             db.commit()
+
+#         job.status = "completed"
+#         db.commit()
+#     except Exception as e:
+#         job.status = "failed"
+#         job.error = str(e)
+#         db.commit()
+#     finally:
+#         db.close()
+
 def import_excel_worker(job_id: int, filepath: str):
     db: Session = SessionLocal()
     try:
         job = db.query(Job).get(job_id)
         job.status = "processing"
+        job.processed_rows = 0
         db.commit()
 
         df = pd.read_excel(filepath)
         job.total_rows = len(df)
         db.commit()
 
-        for i, row in df.iterrows():
-            data = UploadData(
-                nama=row['nama'],
-                alamat=row['alamat'],
-                umur=int(row['umur']),
-                tanggal_lahir=pd.to_datetime(row['tanggal_lahir']),
-            )
-            db.add(data)
-            db.commit()
+        batch_size = 1000
+        total_rows = len(df)
 
-            # update progress
-            job.processed_rows = i + 1
+        for start in range(0, total_rows, batch_size):
+            end = min(start + batch_size, total_rows)
+            batch_df = df.iloc[start:end]
+
+            # Ubah DataFrame ke list of dicts
+            mappings = []
+            for _, row in batch_df.iterrows():
+                mappings.append({
+                    "nama": row["nama"],
+                    "alamat": row["alamat"],
+                    "umur": int(row["umur"]),
+                    "tanggal_lahir": pd.to_datetime(row["tanggal_lahir"]),
+                })
+
+            # Bulk insert dan update progress
+            db.bulk_insert_mappings(UploadData, mappings)
+            job.processed_rows = end
             db.commit()
 
         job.status = "completed"
