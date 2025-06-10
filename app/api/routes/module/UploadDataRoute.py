@@ -105,64 +105,27 @@ def module_upload_data_check_progress(job_id: int, db: Session = Depends(databas
 
 @router.post("/upload-data", response_model=UploadDataSchema.Paginated, description="Get Data UP=ploaded Data with dynamic filter and sorting")
 def module_upload_data_read_data_search_post(
-    params: UploadDataSchema.SearchRequest,
+    # params: UploadDataSchema.SearchRequest,
+    params: UploadDataSchema.SearchRequest = Body(..., example={
+        "filters": {
+            "nama": "string",
+            "alamat": "string"
+        },
+        "sorting": {
+            "nama": "asc",
+            "alamat": "desc"
+        },
+        "page": 1,
+        "per_page": 10
+    }),
     db: Session = Depends(database.get_db)
 ):
-    query = db.query(UploadData)
-
-    # FILTER dinamis
-    # if params.filters:
-    #     for field, value in params.filters.items():
-    #         if hasattr(UploadData, field):
-    #             col = getattr(UploadData, field)
-    #             if str(value).isdigit():
-    #                 query = query.filter(col == int(value))
-    #             else:
-    #                 query = query.filter(col.like(f"%{value}%"))
-
-    # if params.filters:
-    #     for field, value in params.filters.items():
-    #         if hasattr(UploadData, field):
-    #             col = getattr(UploadData, field)
-    #             if str(col.type).__contains__('INTEGER'):
-    #                 query = query.filter(col == int(value))
-    #             else:
-    #                 query = query.filter(col.like(f"%{value}%"))
-
-    if params.filters:
-        for field, value in params.filters.items():
-            if hasattr(UploadData, field):
-                col = getattr(UploadData, field)
-                query = query.filter(col.like(f"%{value}%"))
-
-
-    # SORTING dinamis
-    if params.sorting:
-        sort_clauses = []
-        for field, direction in params.sorting.items():
-            if hasattr(UploadData, field):
-                col = getattr(UploadData, field)
-                sort_clauses.append(
-                    col.desc() if direction.lower() == "desc" else col.asc())
-        if sort_clauses:
-            query = query.order_by(*sort_clauses)
-
-    # PAGINATION
-    offset = (params.page - 1) * params.per_page
-    total = query.count()
-    uploadData = query.offset(offset).limit(params.per_page).all()
-   
-    # return {
-    #     "upload_data": uploadData,
-    #     "total": total,
-    #     "page": params.page,
-    #     "per_page": params.per_page
-    # }
-
-    responseUploadData = [UploadDataSchema.Out.from_orm(user) for user in uploadData]
+    getData = UploadDataController.get_data(params, db)
+    responseUploadData = [UploadDataSchema.Out.from_orm(
+        user) for user in getData['uploadData']]
     responseData = {
         "upload_data": responseUploadData,
-        "total": total,
+        "total": getData['total'],
         "page": params.page,
         "per_page": params.per_page
     }

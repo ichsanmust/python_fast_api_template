@@ -38,3 +38,53 @@ def import_excel_worker(job_id: int, filepath: str):
         db.commit()
     finally:
         db.close()
+
+
+def get_data(params, db):
+    query = db.query(UploadData)
+
+    # FILTER dinamis
+    # if params.filters:
+    #     for field, value in params.filters.items():
+    #         if hasattr(UploadData, field):
+    #             col = getattr(UploadData, field)
+    #             if str(value).isdigit():
+    #                 query = query.filter(col == int(value))
+    #             else:
+    #                 query = query.filter(col.like(f"%{value}%"))
+
+    # if params.filters:
+    #     for field, value in params.filters.items():
+    #         if hasattr(UploadData, field):
+    #             col = getattr(UploadData, field)
+    #             if str(col.type).__contains__('INTEGER'):
+    #                 query = query.filter(col == int(value))
+    #             else:
+    #                 query = query.filter(col.like(f"%{value}%"))
+
+    if params.filters:
+        for field, value in params.filters.items():
+            if hasattr(UploadData, field):
+                col = getattr(UploadData, field)
+                query = query.filter(col.like(f"%{value}%"))
+
+    # SORTING dinamis
+    if params.sorting:
+        sort_clauses = []
+        for field, direction in params.sorting.items():
+            if hasattr(UploadData, field):
+                col = getattr(UploadData, field)
+                sort_clauses.append(
+                    col.desc() if direction.lower() == "desc" else col.asc())
+        if sort_clauses:
+            query = query.order_by(*sort_clauses)
+
+    # PAGINATION
+    offset = (params.page - 1) * params.per_page
+    total = query.count()
+    uploadData = query.offset(offset).limit(params.per_page).all()
+
+    return {
+        "total": total,
+        "uploadData": uploadData
+    }
