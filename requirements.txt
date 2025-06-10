@@ -1,0 +1,17 @@
+fastapi
+uvicorn
+sqlalchemy
+pydantic==2.10.5
+pydantic-extra-types==2.10.2
+pydantic-settings==2.7.1
+pydantic_core==2.27.2
+python-dotenv
+passlib[bcrypt]
+psycopg2-binary
+python-jose[cryptography]
+python-multipart
+pyjwt
+pymysql
+email-validator
+pandas
+openpyxl
