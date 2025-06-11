@@ -74,6 +74,7 @@ def import_excel_worker(job_id: int, filepath: str):
         df = pd.read_excel(filepath)
         total_rows = len(df)
         job.total_rows = total_rows
+        job.processing_message = 'Inserting to Database ...'
         db.commit()
 
         # Atur ukuran batch (bisa diubah sesuai kebutuhan)
@@ -97,13 +98,13 @@ def import_excel_worker(job_id: int, filepath: str):
 
             # Update progres
             job = db.query(Job).get(job_id)
-            job.processing_message = 'Insert to Database ...'
+            job.processing_message = 'Inserting to Database ...'
             job.processed_rows = end
             db.commit()
 
         # Sukses
         job = db.query(Job).get(job_id)
-        job.processing_message = 'Success insert to Database'
+        job.processing_message = 'Success inserted to Database'
         job.status = "completed"
         db.commit()
 
