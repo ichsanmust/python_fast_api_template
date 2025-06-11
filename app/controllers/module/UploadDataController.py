@@ -66,6 +66,7 @@ def import_excel_worker(job_id: int, filepath: str):
         # Ambil job dari DB dan tandai sebagai "processing"
         job = db.query(Job).get(job_id)
         job.status = "processing"
+        job.processing_message = 'Colecting Data From Excel ...'
         job.processed_rows = 0
         db.commit()
 
@@ -96,17 +97,20 @@ def import_excel_worker(job_id: int, filepath: str):
 
             # Update progres
             job = db.query(Job).get(job_id)
+            job.processing_message = 'Insert to Database ...'
             job.processed_rows = end
             db.commit()
 
         # Sukses
         job = db.query(Job).get(job_id)
+        job.processing_message = 'Success insert to Database'
         job.status = "completed"
         db.commit()
 
     except Exception as e:
         # Tangani error
         job = db.query(Job).get(job_id)
+        job.processing_message = 'Error insert to Database'
         job.status = "failed"
         job.error = str(e)
         db.commit()

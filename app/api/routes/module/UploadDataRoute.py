@@ -81,7 +81,8 @@ def module_upload_data_upload_excel(file: UploadFile = File(...), db: Session = 
     threading.Thread(target=UploadDataController.import_excel_worker, args=(
         job.id, filepath)).start()
 
-    return {"message": "Upload received", "job_id": job.id}
+    responseData = {"message": "Upload received", "job_id": job.id}
+    return config.response_format(200, "success", "success Upload", responseData)
 
 
 @router.get("/upload-progress/{job_id}")
@@ -94,13 +95,16 @@ def module_upload_data_check_progress(job_id: int, db: Session = Depends(databas
     if job.total_rows > 0:
         progress = int((job.processed_rows / job.total_rows) * 100)
 
-    return {
+    responseData = {
         "status": job.status,
+        "nessage": job.processing_message,
         "progress": progress,
         "processed": job.processed_rows,
         "total": job.total_rows,
         "error": job.error
     }
+
+    return config.response_format(200, "success", "success get progress data", responseData)
 
 
 @router.post("/upload-data", response_model=UploadDataSchema.Paginated, description="Get Data UP=ploaded Data with dynamic filter and sorting")
