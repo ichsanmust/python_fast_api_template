@@ -97,7 +97,7 @@ def module_upload_data_check_progress(job_id: int, db: Session = Depends(databas
 
     processing_time_string = ''
     processing_time_in_second = ''
-    if (job.status == 'completed'):
+    if job.status in ['completed', 'failed']:
         processing_time = UploadDataController.get_rocessing_time(
             job.created_at, job.updated_at)
         processing_time_string = processing_time['format_dinamis']
