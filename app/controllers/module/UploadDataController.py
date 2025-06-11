@@ -5,8 +5,6 @@ from app.models.module.Job import Job
 from app.core.database import Base, SessionLocal
 from sqlalchemy import insert
 
-upload_table = UploadData.__table__
-
 
 def insert_batch_raw(db, data):
     upload_table = UploadData.__table__  # Akses table dengan benar
