@@ -105,7 +105,7 @@ def module_upload_data_check_progress(job_id: int, db: Session = Depends(databas
 
     responseData = {
         "status": job.status,
-        "nessage": job.processing_message,
+        "processing_message": job.processing_message,
         "progress": progress,
         "processed": job.processed_rows,
         "total": job.total_rows,
