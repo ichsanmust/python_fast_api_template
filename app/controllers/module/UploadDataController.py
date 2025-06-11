@@ -1,3 +1,4 @@
+from datetime import datetime
 import pandas as pd
 from sqlalchemy.orm import Session
 from app.models.module.UploadData import UploadData
@@ -11,6 +12,37 @@ def insert_batch_raw(db, data):
     stmt = insert(upload_table)
     db.execute(stmt, data)
     db.commit()
+
+
+def get_rocessing_time(waktu1: str, waktu2: str):
+    # fmt = "%Y-%m-%d %H:%M:%S"
+    # dt1 = datetime.strptime(waktu1, fmt)
+    # dt2 = datetime.strptime(waktu2, fmt)
+
+    dt1 = waktu1
+    dt2 = waktu2
+
+
+    # pakai abs biar tidak negatif
+    total_detik = int(abs((dt1 - dt2).total_seconds()))
+
+    jam = total_detik // 3600
+    sisa = total_detik % 3600
+    menit = sisa // 60
+    detik = sisa % 60
+
+    parts = []
+    if jam:
+        parts.append(f"{jam} jam")
+    if menit:
+        parts.append(f"{menit} menit")
+    if detik or not parts:  # kalau semua 0, tetap tampilkan 0 detik
+        parts.append(f"{detik} detik")
+
+    return {
+        "selisih_detik": total_detik,
+        "format_dinamis": " ".join(parts)
+    }
 
 
 # v1

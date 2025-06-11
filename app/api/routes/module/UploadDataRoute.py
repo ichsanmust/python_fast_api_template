@@ -95,13 +95,23 @@ def module_upload_data_check_progress(job_id: int, db: Session = Depends(databas
     if job.total_rows > 0:
         progress = int((job.processed_rows / job.total_rows) * 100)
 
+    processing_time_string = ''
+    processing_time_in_second = ''
+    if (job.status == 'completed'):
+        processing_time = UploadDataController.get_rocessing_time(
+            job.created_at, job.updated_at)
+        processing_time_string = processing_time['format_dinamis']
+        processing_time_in_second = processing_time['selisih_detik']
+
     responseData = {
         "status": job.status,
         "nessage": job.processing_message,
         "progress": progress,
         "processed": job.processed_rows,
         "total": job.total_rows,
-        "error": job.error
+        "error": job.error,
+        "processing_time_string": processing_time_string,
+        "processing_time_second": processing_time_in_second
     }
 
     return config.response_format(200, "success", "success get progress data", responseData)
