@@ -18,7 +18,6 @@ def get_user_by_email(db: Session, email: str):
 def create_user(db: Session, user: UserSchema.UserCreate):
     hashed_password = hash_password(user.password)
     active = 1
-    UserSchema.BaseModel
     db_user = User(
         username=user.username,
         email=user.email,

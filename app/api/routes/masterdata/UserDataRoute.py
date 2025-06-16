@@ -27,7 +27,12 @@ def master_data_user_create(user: UserDataSchema.Create, db: Session = Depends(d
     return config.response_format(200, "success", "success insert data", response)
 
 
-@router.get("/users", response_model=list[UserDataSchema.Out])
+@router.get("/users", response_model=config.ResponseModel[list[UserDataSchema.Out]],
+             responses={
+        422: {
+            "model": config.ValidationErrorResponse,
+        }
+    })
 def master_data_user_read_all(skip: int = 0, limit: int = 10, db: Session = Depends(database.get_db)):
     data = UserDataController.findAll(db, skip, limit)
 

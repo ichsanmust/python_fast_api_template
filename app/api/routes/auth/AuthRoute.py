@@ -9,23 +9,24 @@ from typing import Annotated
 router = APIRouter()
 
 
-@router.post("/signup", summary="Sign Up", description="Create New User")
+@router.post("/signup", summary="Sign Up", description="Create New User", response_model=config.ResponseModel[list[UserSchema.Out]], responses={
+    422: {
+        "model": config.ValidationErrorResponse,
+    }
+})
 def signup(
-        user: UserSchema.UserCreate = Body(..., example={
-            "username": "johndoe123",
-            "email": "johndoe@example.com",
-            "password": "securepassword"
-        }),
+        user: UserSchema.UserCreate,
         db: Session = Depends(database.get_db)
 ):
 
     if AuthController.get_user_by_username(db, user.username):
-        return config.response_format(400, "failed", "Username already exists")
+        raise HTTPException(status_code=400, detail="Username already exists")
     if AuthController.get_user_by_email(db, user.email):
-        return config.response_format(400, "failed", "Email already exists")
+        raise HTTPException(status_code=400, detail="Email already exists")
 
     inserted_user = AuthController.create_user(db, user)
-    return config.response_format(200, "success", f"username : {user.username} has been registered", inserted_user)
+    response = UserSchema.Out.from_orm(inserted_user)
+    return config.response_format(200, "success", f"username : {user.username} has been registered", response)
 
 
 # @router.post("/login", summary="Login", description="Login with username and password, so retreive token Bearer")

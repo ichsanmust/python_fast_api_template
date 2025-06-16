@@ -1,4 +1,7 @@
-from typing import List, Dict, Union, Any
+from pydantic.generics import GenericModel
+from pydantic import BaseModel
+from typing import Generic, TypeVar
+from typing import List, Dict, Union, Any, Optional
 from fastapi.responses import JSONResponse
 from zoneinfo import ZoneInfo  # Gunakan pytz kalau Python < 3.9
 from fastapi.encoders import jsonable_encoder
@@ -23,7 +26,7 @@ excluded_endpoints = {
     ("GET", "/auth/signup"),
     ("POST", "/auth/login"),
     ("GET", "/auth/login"),
-    
+
     # ("POST", "/auth/token"),
     # ("POST", "/auth/login-with-detail"),
     # ("POST", "/auth/verify-token"),
@@ -59,3 +62,22 @@ def response_format(
             "data": encoded_data,
         },
     )
+
+
+T = TypeVar("T")
+class ResponseModel(GenericModel, Generic[T]):
+    code: int = 200
+    status: str = 'success'
+    message: str
+    data: T
+
+class ErrorDetail(BaseModel):
+    loc: List[str]
+    msg: str
+    type: str
+
+class ValidationErrorResponse(BaseModel):
+    code: int = 422
+    status: str = "failed"
+    message: str = "Failed Input Validation"
+    data: Optional[List[ErrorDetail]] = None
