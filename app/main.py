@@ -166,7 +166,7 @@ async def check_route_middleware(request: Request, call_next):
     if not found:
         return config.response_format(
             404,
-            "error",
+            "failed",
             f"Route '{path}' not found",
             None
         )
@@ -179,7 +179,7 @@ async def check_route_middleware(request: Request, call_next):
     if not method_allowed:
         return config.response_format(
             405,
-            "error",
+            "failed",
             f"Metode '{method}' not allowed for path {path}",
             None
         )
@@ -215,7 +215,7 @@ async def global_exception_handler(request: Request, exc: Exception):
     if log_id:
         user_message += f" (Log ID: #{log_id})"
 
-    return config.response_format(500, "error", user_message, None)
+    return config.response_format(500, "failed", user_message, None)
 
 
 @app.exception_handler(RequestValidationError)
@@ -228,7 +228,7 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
 async def custom_http_exception_handler(request: Request, exc: StarletteHTTPException):
     return config.response_format(
         exc.status_code,
-        "error",
+        "failed",
         exc.detail,
         None
     )
