@@ -14,25 +14,15 @@ from app.models.masterdata.UserData import UserData
 router = APIRouter()
 
 
-@router.post("/users", response_model=UserDataSchema.Out)
-def master_data_user_create(user: UserDataSchema.Create, db: Session = Depends(database.get_db), user_login: dict = Depends(security.get_current_user)):
-    if UserDataController.findByAttribute(db, 'username', user.username):
-        return config.response_format(400, "failed", f"Username '{user.username}' already exists")
-    if UserDataController.findByAttribute(db, 'email', user.email):
-        return config.response_format(400, "failed", f"Email '{user.email}' already exists")
-
-    user_id = user_login.get("user_id")
-    inserted = UserDataController.create(db, user, user_id)
-    response = UserDataSchema.Out.from_orm(inserted)
-    return config.response_format(200, "success", "success insert data", response)
-
-
-@router.get("/users", response_model=config.MultiDataResponseModel[list[UserDataSchema.Out]],
-             responses={
-        422: {
+@router.get("/users", description="Master Data User Read All Standard", response_model=config.MultiDataResponseModel[list[UserDataSchema.Out]],
+            responses={
+    422: {
             "model": config.ValidationErrorResponseModel,
-        }
-    })
+            },
+    400: {
+        "model": config.BadRequestResponseModel,
+    }
+})
 def master_data_user_read_all(skip: int = 0, limit: int = 10, db: Session = Depends(database.get_db)):
     data = UserDataController.findAll(db, skip, limit)
 
@@ -40,11 +30,47 @@ def master_data_user_read_all(skip: int = 0, limit: int = 10, db: Session = Depe
     return config.response_format(200, "success", "success get data", response)
 
 
-@router.get("/users-search", response_model=UserDataSchema.Paginated, description="Master Data User Read All with Search (like username or like email)")
+@router.post("/users", description="Create Data User", response_model=config.SingleDataResponseModel[UserDataSchema.Out],
+             responses={
+    422: {
+        "model": config.ValidationErrorResponseModel,
+    },
+    400: {
+        "model": config.BadRequestResponseModel,
+    }
+})
+def master_data_user_create(user: UserDataSchema.Create, db: Session = Depends(database.get_db), user_login: dict = Depends(security.get_current_user)):
+    if UserDataController.findByAttribute(db, 'username', user.username):
+        raise HTTPException(
+            status_code=400, detail=f"Username '{user.username}' already exists")
+    if UserDataController.findByAttribute(db, 'email', user.email):
+        raise HTTPException(
+            status_code=400, detail=f"Email '{user.email}' already exists")
+
+    user_id = user_login.get("user_id")
+    inserted = UserDataController.create(db, user, user_id)
+    response = UserDataSchema.Out.from_orm(inserted)
+    return config.response_format(200, "success", "success insert data", response)
+
+
+@router.get("/users-search", response_model=config.SingleDataResponseModel[UserDataSchema.Paginated], responses={
+    422: {
+        "model": config.ValidationErrorResponseModel,
+    },
+    400: {
+        "model": config.BadRequestResponseModel,
+    }
+},
+    description="Master Data User Read All with Search (like username or like email)")
 def master_data_user_read_all_search(
     request: Request,
     db: Session = Depends(database.get_db),
-    search: Optional[str] = None,
+    search: str = Query(
+        default="",
+        title="Search",
+        description="Filter user data by username or email",
+        example="admin"
+    ),
     # start_date: Optional[datetime] = None,
     # end_date: Optional[datetime] = None,
     page: int = Query(1, ge=1),
@@ -99,7 +125,7 @@ def master_data_user_read_all_search(
     per_page = int(request.query_params.get("per_page", 10))
     offset = (page - 1) * per_page
     total = query.count()
-    users = query.offset(offset).limit(per_page).all()
+    getData = query.offset(offset).limit(per_page).all()
 
     # return {
     #     "user_data": users,
@@ -108,8 +134,10 @@ def master_data_user_read_all_search(
     #     "per_page": per_page
     # }
 
+    responseUploadData = [UserDataSchema.Out.from_orm(
+        user) for user in getData]
     responseData = {
-        "user_data": users,
+        "user_data": responseUploadData,
         "total": total,
         "page": page,
         "per_page": per_page
@@ -117,15 +145,22 @@ def master_data_user_read_all_search(
     return config.response_format(200, "success", "success get data", responseData)
 
 
-@router.post("/users-search", response_model=UserDataSchema.Paginated,
-             description="""
+@router.post("/users-search", response_model=config.SingleDataResponseModel[UserDataSchema.Paginated], responses={
+    422: {
+        "model": config.ValidationErrorResponseModel,
+    },
+    400: {
+        "model": config.BadRequestResponseModel,
+    }
+},
+    description="""
     Master Data User Read All with dynamic filter and sorting
     <br>
     #example Body Format:
     <br>
-    - `filters`: `{"username": "john", "status": 1}`
+    - `"filters": {"username": "admin", "active": "1"},`
     <br>
-    - `sorting` : `{"created_date": "desc", "username": "asc"}`
+    - `"sorting": {"created_date": "desc", "username": "asc"},`
     """)
 def master_data_user_read_all_search_dynamic(
     params: UserDataSchema.SearchRequest = Body(
@@ -186,7 +221,7 @@ def master_data_user_read_all_search_dynamic(
     # PAGINATION
     offset = (params.page - 1) * params.per_page
     total = query.count()
-    users = query.offset(offset).limit(params.per_page).all()
+    getData = query.offset(offset).limit(params.per_page).all()
 
     # return {
     #     "user_data": users,
@@ -195,8 +230,10 @@ def master_data_user_read_all_search_dynamic(
     #     "per_page": params.per_page
     # }
 
+    responseUploadData = [UserDataSchema.Out.from_orm(
+        user) for user in getData]
     responseData = {
-        "user_data": users,
+        "user_data": responseUploadData,
         "total": total,
         "page": params.page,
         "per_page": params.per_page
@@ -205,38 +242,74 @@ def master_data_user_read_all_search_dynamic(
     return config.response_format(200, "success", "success get data", responseData)
 
 
-@router.get("/users/{user_id}", response_model=UserDataSchema.Out)
+@router.get("/users/{user_id}", response_model=config.SingleDataResponseModel[UserDataSchema.Out],
+            responses={
+    422: {
+            "model": config.ValidationErrorResponseModel,
+            },
+    400: {
+        "model": config.BadRequestResponseModel,
+    }
+},
+    description="Get Data User by ID")
 def master_data_user_read_one(user_id: int, db: Session = Depends(database.get_db)):
     data = UserDataController.findByPK(db, user_id)
     if not data:
-        return config.response_format(404, "failed", "Data Not Found")
+        raise HTTPException(
+            status_code=400, detail="Data Not Found")
 
     response = UserDataSchema.Out.from_orm(data)
     return config.response_format(200, "success", "success get data", response)
 
 
-@router.put("/users/{user_id}", response_model=UserDataSchema.Out)
+@router.put("/users/{user_id}", response_model=config.SingleDataResponseModel[UserDataSchema.Out],
+            responses={
+    422: {
+            "model": config.ValidationErrorResponseModel,
+            },
+    400: {
+        "model": config.BadRequestResponseModel,
+    }
+},
+    description="Update Data User by ID")
 def master_data_user_update(user_id: int, user: UserDataSchema.Update, db: Session = Depends(database.get_db), user_login: dict = Depends(security.get_current_user)):
     data = UserDataController.findByPK(db, user_id)
 
     if not data:
-        return config.response_format(404, "failed", "Data Not Found")
+        raise HTTPException(
+            status_code=400, detail="Data Not Found")
     if UserDataController.findByAttributeOnUpdate(db, 'username', user.username, data.id):
-        return config.response_format(400, "failed", f"Username '{user.username}' already exists")
+        raise HTTPException(
+            status_code=400, detail=f"Username '{user.username}' already exists")
     if UserDataController.findByAttributeOnUpdate(db, 'email', user.email, data.id):
-        return config.response_format(400, "failed", f"Email '{user.email}' already exists")
+        raise HTTPException(
+            status_code=400, detail=f"Email '{user.email}' already exists")
 
     user_id = user_login.get("user_id")
     updated = UserDataController.update(db, data, user, user_id)
 
-    return updated
+    response = UserDataSchema.Out.from_orm(updated)
+    return config.response_format(200, "success", "success update data", response)
 
 
-@router.delete("/users/{user_id}")
+@router.delete("/users/{user_id}", response_model=config.SingleDataResponseModel[UserDataSchema.OutDeleted],
+               responses={
+    422: {
+        "model": config.ValidationErrorResponseModel,
+    },
+    400: {
+        "model": config.BadRequestResponseModel,
+    }
+},
+    description="Delete Data User by ID")
 def master_data_user_delete(user_id: int, db: Session = Depends(database.get_db)):
     data = UserDataController.findByPK(db, user_id)
     if not data:
-        return config.response_format(404, "failed", "Data Not Found")
+        raise HTTPException(
+            status_code=400, detail="Data Not Found")
 
     delete = UserDataController.delete(db, data)
-    return config.response_format(200, "success", f"User '{data.id}' has been deleted")
+    data = {
+        "message": f"User '{data.id}' has been deleted"
+    }
+    return config.response_format(200, "success", 'success delete data', data)
