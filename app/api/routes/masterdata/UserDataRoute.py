@@ -112,9 +112,31 @@ def master_data_user_read_all_search(
     return config.response_format(200, "success", "success get data", responseData)
 
 
-@router.post("/users-search", response_model=UserDataSchema.Paginated, description="Master Data User Read All with dynamic filter and sorting")
+@router.post("/users-search", response_model=UserDataSchema.Paginated,
+             description="""
+    Master Data User Read All with dynamic filter and sorting
+    <br>
+    ### example Body Format:
+    <br>
+    - `filters`: `{"username": "john", "status": 1}`
+    <br>
+    - `sorting` : `{"created_date": "desc", "username": "asc"}`
+    """)
 def master_data_user_read_all_search_dynamic(
-    params: UserDataSchema.SearchRequest,
+    params: UserDataSchema.SearchRequest = Body(
+        example={
+            "filters": {
+                "username": "john",
+                "status": "active"
+            },
+            "sorting": {
+                "created_date": "desc",
+                "username": "asc"
+            },
+            "page": 3,
+            "per_page": 30
+        }
+    ),
     db: Session = Depends(database.get_db)
 ):
     query = db.query(UserData)

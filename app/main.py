@@ -122,6 +122,7 @@ def custom_rapidoc():
         show-method-in-nav-bar="as-colored-block"
         use-path-in-nav-bar="true"
         show-curl-before-try="true"
+        fill-request-fields-with-example="true"
         />
         </rapi-doc>
     </body>

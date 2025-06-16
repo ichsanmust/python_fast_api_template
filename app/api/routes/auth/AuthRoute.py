@@ -54,16 +54,14 @@ def signup(
 
 @router.post("/login", summary="Login", description="Login with username and password, so retreive token Bearer")
 def login(
-        user: UserSchema.UserLogin = Body(..., example={
-            "username": "username123",
-            "password": "password123"
-        }),
+        user: UserSchema.UserLogin,
         db: Session = Depends(database.get_db)
 ):
 
     db_user = AuthController.get_user_by_username(db, user.username)
     if not db_user:
         return config.response_format(400, "failed", "User credentials not found")
+        # raise HTTPException(status_code=400, detail="Incorrect username or password") #pake ini juga bisa
     if not AuthController.verify_password(user.password, db_user.hashed_password):
         return config.response_format(400, "failed", "Wrong Password credentials")
     if not AuthController.verify_active(1, db_user.active):
