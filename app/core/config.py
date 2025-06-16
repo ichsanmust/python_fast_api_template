@@ -10,13 +10,20 @@ APPDESCRIPTION = "Python Fast API"
 
 # exclude from authorized bearer
 excluded_endpoints = {
-    ("GET", "/docs"),
     ("GET", "/openapi.json"),
+
+    # ("GET", "/docs"),
+    # ("GET", "/redoc"),
+
+    ("GET", "/static/rapidoc/rapidoc-min.js"),
+    ("GET", "/rapidoc"),
+
     ("GET", "/"),
     ("POST", "/auth/signup"),
     ("GET", "/auth/signup"),
     ("POST", "/auth/login"),
     ("GET", "/auth/login"),
+    
     # ("POST", "/auth/token"),
     # ("POST", "/auth/login-with-detail"),
     # ("POST", "/auth/verify-token"),
