@@ -53,5 +53,5 @@ class SearchRequest(BaseModel):
     # search: Optional[str] = None
     # start_date: Optional[datetime] = None
     # end_date: Optional[datetime] = None
-    page: int = 1
-    per_page: int = 10
+    page: int = Field(1, example=1)
+    per_page: int = Field(10, example=10)

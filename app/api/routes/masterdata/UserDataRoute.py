@@ -116,7 +116,7 @@ def master_data_user_read_all_search(
              description="""
     Master Data User Read All with dynamic filter and sorting
     <br>
-    ### example Body Format:
+    #example Body Format:
     <br>
     - `filters`: `{"username": "john", "status": 1}`
     <br>
