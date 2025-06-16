@@ -182,23 +182,29 @@ def master_data_user_read_all_search_dynamic(
     query = db.query(UserData)
 
     # FILTER dinamis
+    # if params.filters:
+    #     for field, value in params.filters.items():
+    #         if hasattr(UserData, field):
+    #             col = getattr(UserData, field)
+    #             if str(value).isdigit():
+    #                 query = query.filter(col == int(value))
+    #             else:
+    #                 query = query.filter(col.like(f"%{value}%"))
+
+    # if params.filters:
+    #     for field, value in params.filters.items():
+    #         if hasattr(UserData, field):
+    #             col = getattr(UserData, field)
+    #             if str(col.type).__contains__('INTEGER'):
+    #                 query = query.filter(col == int(value))
+    #             else:
+    #                 query = query.filter(col.like(f"%{value}%"))
+
     if params.filters:
         for field, value in params.filters.items():
             if hasattr(UserData, field):
                 col = getattr(UserData, field)
-                if str(value).isdigit():
-                    query = query.filter(col == int(value))
-                else:
-                    query = query.filter(col.like(f"%{value}%"))
-
-    # SEARCH global
-    # if params.search:
-    #     query = query.filter(
-    #         or_(
-    #             UserData.username.like(f"%{params.search}%"),
-    #             UserData.email.like(f"%{params.search}%")
-    #         )
-    #     )
+                query = query.filter(col.like(f"%{value}%"))
 
     # FILTER tanggal
     # if params.start_date:
