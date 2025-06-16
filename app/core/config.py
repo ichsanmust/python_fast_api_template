@@ -1,4 +1,3 @@
-from pydantic.generics import GenericModel
 from pydantic import BaseModel
 from typing import Generic, TypeVar
 from typing import List, Dict, Union, Any, Optional
@@ -65,18 +64,30 @@ def response_format(
 
 
 T = TypeVar("T")
-class ResponseModel(GenericModel, Generic[T]):
+class SingleDataResponseModel(BaseModel, Generic[T]):
     code: int = 200
     status: str = 'success'
     message: str
-    data: T
+    data: Optional[T] = None
+
+class MultiDataResponseModel(BaseModel, Generic[T]):
+    code: int = 200
+    status: str = 'success'
+    message: str
+    data: Optional[Union[T, List[T]]] = None
+
+class BadRequestResponseModel(BaseModel, Generic[T]):
+    code: int = 400
+    status: str = 'failed'
+    message: str
+    data: Optional[Union[T, List[T]]] = None
 
 class ErrorDetail(BaseModel):
     loc: List[str]
     msg: str
     type: str
 
-class ValidationErrorResponse(BaseModel):
+class ValidationErrorResponseModel(BaseModel):
     code: int = 422
     status: str = "failed"
     message: str = "Failed Input Validation"

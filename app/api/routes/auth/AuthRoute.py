@@ -9,9 +9,12 @@ from typing import Annotated
 router = APIRouter()
 
 
-@router.post("/signup", summary="Sign Up", description="Create New User", response_model=config.ResponseModel[list[UserSchema.Out]], responses={
+@router.post("/signup", summary="Sign Up", description="Create New User", response_model=config.SingleDataResponseModel[UserSchema.Out], responses={
     422: {
-        "model": config.ValidationErrorResponse,
+        "model": config.ValidationErrorResponseModel,
+    },
+    400: {
+        "model": config.BadRequestResponseModel,
     }
 })
 def signup(
@@ -53,7 +56,14 @@ def signup(
 
 #     return config.response_format(200, "success", "Success Login ", data)
 
-@router.post("/login", summary="Login", description="Login with username and password, so retreive token Bearer")
+@router.post("/login", summary="Login", description="Login with username and password, so retreive token Bearer", response_model=config.SingleDataResponseModel[UserSchema.OutLogin], responses={
+    422: {
+        "model": config.ValidationErrorResponseModel,
+    },
+    400: {
+        "model": config.BadRequestResponseModel,
+    }
+})
 def login(
         user: UserSchema.UserLogin,
         db: Session = Depends(database.get_db)
@@ -61,12 +71,13 @@ def login(
 
     db_user = AuthController.get_user_by_username(db, user.username)
     if not db_user:
-        return config.response_format(400, "failed", "User credentials not found")
-        # raise HTTPException(status_code=400, detail="Incorrect username or password") #pake ini juga bisa
+        raise HTTPException(
+            status_code=400, detail="User credentials not found")
     if not AuthController.verify_password(user.password, db_user.hashed_password):
-        return config.response_format(400, "failed", "Wrong Password credentials")
+        raise HTTPException(
+            status_code=400, detail="Wrong Password credentials")
     if not AuthController.verify_active(1, db_user.active):
-        return config.response_format(400, "failed", "User Not Active")
+        raise HTTPException(status_code=400, detail="User Not Active")
 
     access_token = security.create_access_token({
         "sub": db_user.username,
@@ -80,9 +91,16 @@ def login(
     return config.response_format(200, "success", "Success Login ", data)
 
 
-@router.get("/profile", summary="Get current user",  description="Get User Login With Token Bearier")
+@router.get("/profile", summary="Get current user",  description="Get User Login With Token Bearier", response_model=config.SingleDataResponseModel[UserSchema.SignedUser], responses={
+    422: {
+        "model": config.ValidationErrorResponseModel,
+    },
+    400: {
+        "model": config.BadRequestResponseModel,
+    }
+})
 def read_profile(user_login: dict = Depends(security.get_current_user)):
-    user_id = user_login.get("user_id")
+    # user_id = user_login.get("user_id")
     return config.response_format(200, "success", "You are logged in", {"user": user_login})
 
 

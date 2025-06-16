@@ -44,14 +44,6 @@ def custom_openapi():
         },
     }
 
-    # for path, methods in openapi_schema["paths"].items():
-    #     for method, details in methods.items():
-    #         if not config.is_excluded(method.upper(), path):
-    #             details.setdefault("security", []).append(
-    #                 {
-    #                     "OAuth2PasswordBearer": []
-    #                 }
-    #             )
 
     for path, methods in openapi_schema["paths"].items():
         for method, details in methods.items():
@@ -110,9 +102,6 @@ def custom_rapidoc():
         theme="light"
         show-header="true"
         heading-text="Dokumentasi Fast Api Python"
-        font-size="large"
-        regular-font="Open Sans"
-        mono-font="Fira Code"
         allow-authentication="true"
         allow-try="true"
         persist-auth="true"
