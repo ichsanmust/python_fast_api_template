@@ -52,7 +52,7 @@ Gunakan perintah berikut untuk menjalankan aplikasi secara lokal di port 8000:
     uvicorn app.main:app --host 0.0.0.0 --port 9000 --reload
 
 Lalu buka browser dan akses: http://localhost:9000 atau http://0.0.0.0:9000
-Untuk Docs / Swagger : http://localhost:9000/docs atau http://0.0.0.0:9000/docs
+Untuk Docs / Swagger : http://localhost:9000/rapidoc atau http://0.0.0.0:9000/rapidoc
 
 
 9. Test dengan endpoint /auth/signup (create user)
