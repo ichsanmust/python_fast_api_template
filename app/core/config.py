@@ -19,6 +19,7 @@ excluded_endpoints = {
 
     ("GET", "/static/rapidoc/rapidoc-min.js"),
     ("GET", "/rapidoc"),
+    ("GET", "/scalar"),
 
     ("GET", "/"),
     ("POST", "/auth/signup"),

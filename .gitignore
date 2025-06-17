@@ -57,4 +57,4 @@ env/
 *.swo
 
 # Virtual environment
-.python_fast_api/
+.python_fast_api_template/

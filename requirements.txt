@@ -16,3 +16,4 @@ pymysql
 email-validator
 pandas
 openpyxl
+scalar-fastapi

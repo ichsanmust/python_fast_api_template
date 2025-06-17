@@ -17,6 +17,7 @@ from starlette.exceptions import HTTPException as StarletteHTTPException
 from starlette.routing import compile_path
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
+from scalar_fastapi import get_scalar_api_reference
 
 
 app = FastAPI(
@@ -44,21 +45,20 @@ def custom_openapi():
         },
     }
 
-
     for path, methods in openapi_schema["paths"].items():
         for method, details in methods.items():
             if not config.is_excluded(method.upper(), path):
                 # pastikan field "security" ada
                 security_list = details.setdefault("security", [])
-                
+
                 # cek apakah "OAuth2PasswordBearer" sudah ada
-                already_exists = any("OAuth2PasswordBearer" in s for s in security_list)
+                already_exists = any(
+                    "OAuth2PasswordBearer" in s for s in security_list)
 
                 if not already_exists:
                     security_list.append({
                         "OAuth2PasswordBearer": []
                     })
-
 
     app.openapi_schema = openapi_schema
     return app.openapi_schema
@@ -119,6 +119,13 @@ def custom_rapidoc():
     """
     return HTMLResponse(content=html_content)
 
+
+@app.get("/scalar", include_in_schema=False)
+async def scalar_html():
+    return get_scalar_api_reference(
+        openapi_url=app.openapi_url,
+        title=app.title,
+    )
 
 app.mount("/static", StaticFiles(directory="app/static"), name="static")
 app.include_router(AuthRoute.router, prefix="/auth", tags=["authentication"])

@@ -21,20 +21,20 @@ Clone terlebih dahulu repository ini ke komputer kamu:
 ---------------------------
 Buat environment virtual agar dependensi terisolasi:
 
-    python -m venv .python_fast_api
+    python -m venv ..python_fast_api_template
 
 atau 
-    python3 -m venv .python_fast_api
+    python3 -m venv ..python_fast_api_template
 
 4. Aktifkan Virtual Environment
 -------------------------------
 - Windows:
 
-    .python_fast_api\Scripts\activate
+    .python_fast_api_template\Scripts\activate
 
 - macOS/Linux:
 
-    source .python_fast_api/bin/activate
+    source .python_fast_api_template/bin/activate
 
 5. Install Dependencies
 -----------------------
@@ -52,7 +52,8 @@ Gunakan perintah berikut untuk menjalankan aplikasi secara lokal di port 8000:
     uvicorn app.main:app --host 0.0.0.0 --port 9000 --reload
 
 Lalu buka browser dan akses: http://localhost:9000 atau http://0.0.0.0:9000
-Untuk Docs / Swagger : http://localhost:9000/rapidoc atau http://0.0.0.0:9000/rapidoc
+Untuk Rapidoc : http://localhost:9000/rapidoc atau http://0.0.0.0:9000/rapidoc
+Untuk Scalar : http://localhost:9000/scalar atau http://0.0.0.0:9000/scalar
 
 
 9. Test dengan endpoint /auth/signup (create user)
