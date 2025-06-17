@@ -17,10 +17,12 @@ router = APIRouter()
 @router.get("/users", description="Master Data User Read All Standard", response_model=config.MultiDataResponseModel[list[UserDataSchema.Out]],
             responses={
     422: {
-            "model": config.ValidationErrorResponseModel,
-            },
+        "model": config.ValidationErrorResponseModel,
+        "description": "Validation error"
+    },
     400: {
         "model": config.BadRequestResponseModel,
+        "description": "Bad request"
     }
 })
 def master_data_user_read_all(skip: int = 0, limit: int = 10, db: Session = Depends(database.get_db)):
@@ -34,9 +36,11 @@ def master_data_user_read_all(skip: int = 0, limit: int = 10, db: Session = Depe
              responses={
     422: {
         "model": config.ValidationErrorResponseModel,
+        "description": "Validation error"
     },
     400: {
         "model": config.BadRequestResponseModel,
+        "description": "Bad request"
     }
 })
 def master_data_user_create(user: UserDataSchema.Create, db: Session = Depends(database.get_db), user_login: dict = Depends(security.get_current_user)):
@@ -56,9 +60,11 @@ def master_data_user_create(user: UserDataSchema.Create, db: Session = Depends(d
 @router.get("/users-search", response_model=config.SingleDataResponseModel[UserDataSchema.Paginated], responses={
     422: {
         "model": config.ValidationErrorResponseModel,
+        "description": "Validation error"
     },
     400: {
         "model": config.BadRequestResponseModel,
+        "description": "Bad request"
     }
 },
     description="Master Data User Read All with Search (like username or like email)")
@@ -148,9 +154,11 @@ def master_data_user_read_all_search(
 @router.post("/users-search", response_model=config.SingleDataResponseModel[UserDataSchema.Paginated], responses={
     422: {
         "model": config.ValidationErrorResponseModel,
+        "description": "Validation error"
     },
     400: {
         "model": config.BadRequestResponseModel,
+        "description": "Bad request"
     }
 },
     description="""
@@ -163,20 +171,7 @@ def master_data_user_read_all_search(
     - `"sorting": {"created_date": "desc", "username": "asc"},`
     """)
 def master_data_user_read_all_search_dynamic(
-    params: UserDataSchema.SearchRequest = Body(
-        example={
-            "filters": {
-                "username": "john",
-                "status": "active"
-            },
-            "sorting": {
-                "created_date": "desc",
-                "username": "asc"
-            },
-            "page": 3,
-            "per_page": 30
-        }
-    ),
+    params: UserDataSchema.SearchRequest,
     db: Session = Depends(database.get_db)
 ):
     query = db.query(UserData)
@@ -251,10 +246,12 @@ def master_data_user_read_all_search_dynamic(
 @router.get("/users/{user_id}", response_model=config.SingleDataResponseModel[UserDataSchema.Out],
             responses={
     422: {
-            "model": config.ValidationErrorResponseModel,
-            },
+
+        "description": "Validation error"
+    },
     400: {
         "model": config.BadRequestResponseModel,
+        "description": "Bad request"
     }
 },
     description="Get Data User by ID")
@@ -271,10 +268,12 @@ def master_data_user_read_one(user_id: int, db: Session = Depends(database.get_d
 @router.put("/users/{user_id}", response_model=config.SingleDataResponseModel[UserDataSchema.Out],
             responses={
     422: {
-            "model": config.ValidationErrorResponseModel,
-            },
+        "model": config.ValidationErrorResponseModel,
+        "description": "Validation error"
+    },
     400: {
         "model": config.BadRequestResponseModel,
+        "description": "Bad request"
     }
 },
     description="Update Data User by ID")
@@ -302,9 +301,11 @@ def master_data_user_update(user_id: int, user: UserDataSchema.Update, db: Sessi
                responses={
     422: {
         "model": config.ValidationErrorResponseModel,
+        "description": "Validation error"
     },
     400: {
         "model": config.BadRequestResponseModel,
+        "description": "Bad request"
     }
 },
     description="Delete Data User by ID")

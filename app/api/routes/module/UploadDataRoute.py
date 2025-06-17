@@ -13,14 +13,35 @@ from app.models.module.Job import Job
 import threading
 import uuid
 import random
-from app.schemas.module import UploadDataSchema
+from app.schemas.module import UploadDataSchema, JobSchema
 from app.models.module.UploadData import UploadData
+from fastapi import Query
 
 
 router = APIRouter()
 
 
-@router.get("/template-excel")
+@router.get("/template-excel", description="Download Template excel", responses={
+    200: {
+            "content": {
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": {
+                    "schema": {
+                        "type": "string",
+                        "format": "binary"
+                    }
+                }
+            },
+            "description": "Excel file generated successfully.",
+            },
+    422: {
+        "model": config.ValidationErrorResponseModel,
+        "description": "Validation error"
+    },
+    400: {
+        "model": config.BadRequestResponseModel,
+        "description": "Bad request"
+    }
+})
 def module_upload_data_download_template_excel(record: int = 10):
     # data = [
     #     {"nama": "Budi Santoso", "alamat": "Jl. Merdeka No. 1",
@@ -65,7 +86,17 @@ def module_upload_data_download_template_excel(record: int = 10):
     )
 
 
-@router.post("/upload-excel")
+@router.post("/upload-excel", description="Upload Excel Based on Template excel", response_model=config.SingleDataResponseModel[JobSchema.Out],
+             responses={
+    422: {
+        "model": config.ValidationErrorResponseModel,
+        "description": "Validation error"
+    },
+    400: {
+        "model": config.BadRequestResponseModel,
+        "description": "Bad request"
+    }
+})
 def module_upload_data_upload_excel(file: UploadFile = File(...), db: Session = Depends(database.get_db)):
     filename = f"{uuid.uuid4()}_{file.filename}"
     filepath = os.path.join("/tmp", filename)
@@ -85,8 +116,18 @@ def module_upload_data_upload_excel(file: UploadFile = File(...), db: Session = 
     return config.response_format(200, "success", "success Upload", responseData)
 
 
-@router.get("/upload-progress/{job_id}")
-def module_upload_data_check_progress(job_id: int, db: Session = Depends(database.get_db)):
+@router.get("/upload-progress", description="Check Progress Upload Data excel", response_model=config.SingleDataResponseModel[JobSchema.OutProgress],
+            responses={
+    422: {
+        "model": config.ValidationErrorResponseModel,
+        "description": "Validation error"
+    },
+    400: {
+        "model": config.BadRequestResponseModel,
+        "description": "Bad request"
+    }
+})
+def module_upload_data_check_progress(job_id: int = Query(...), db: Session = Depends(database.get_db)):
     job = db.query(Job).get(job_id)
     if not job:
         return {"status": "not_found", "progress": 0}
@@ -96,7 +137,7 @@ def module_upload_data_check_progress(job_id: int, db: Session = Depends(databas
         progress = int((job.processed_rows / job.total_rows) * 100)
 
     processing_time_string = ''
-    processing_time_in_second = ''
+    processing_time_in_second = 0
     if job.status in ['completed', 'failed']:
         processing_time = UploadDataController.get_rocessing_time(
             job.created_at, job.updated_at)
@@ -117,21 +158,27 @@ def module_upload_data_check_progress(job_id: int, db: Session = Depends(databas
     return config.response_format(200, "success", "success get progress data", responseData)
 
 
-@router.post("/upload-data", response_model=UploadDataSchema.Paginated, description="Get Data UP=ploaded Data with dynamic filter and sorting")
+@router.post("/upload-data", response_model=config.SingleDataResponseModel[UploadDataSchema.Paginated],
+             responses={
+    422: {
+        "model": config.ValidationErrorResponseModel,
+        "description": "Validation error"
+    },
+    400: {
+        "model": config.BadRequestResponseModel,
+        "description": "Bad request"
+    }
+}, description="""
+    Get Data Uploaded Data with dynamic filter and sorting
+    <br>
+    #example Body Format:
+    <br>
+    - `"filters": {"nama": "user", "alamat": "alamat"},`
+    <br>
+    - `"sorting": {"nama": "desc", "alamat": "asc"},`
+    """)
 def module_upload_data_read_data_search_post(
-    # params: UploadDataSchema.SearchRequest,
-    params: UploadDataSchema.SearchRequest = Body(..., example={
-        "filters": {
-            "nama": "string",
-            "alamat": "string"
-        },
-        "sorting": {
-            "nama": "asc",
-            "alamat": "desc"
-        },
-        "page": 1,
-        "per_page": 10
-    }),
+    params: UploadDataSchema.SearchRequest,
     db: Session = Depends(database.get_db)
 ):
     getData = UploadDataController.get_data(params, db)

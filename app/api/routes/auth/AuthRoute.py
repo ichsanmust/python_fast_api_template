@@ -12,9 +12,11 @@ router = APIRouter()
 @router.post("/signup", summary="Sign Up", description="Create New User", response_model=config.SingleDataResponseModel[UserSchema.Out], responses={
     422: {
         "model": config.ValidationErrorResponseModel,
+        "description": "Validation error"
     },
     400: {
         "model": config.BadRequestResponseModel,
+        "description": "Bad request"
     }
 })
 def signup(
@@ -59,9 +61,11 @@ def signup(
 @router.post("/login", summary="Login", description="Login with username and password, so retreive token Bearer", response_model=config.SingleDataResponseModel[UserSchema.OutLogin], responses={
     422: {
         "model": config.ValidationErrorResponseModel,
+        "description": "Validation error"
     },
     400: {
         "model": config.BadRequestResponseModel,
+        "description": "Bad request"
     }
 })
 def login(
@@ -94,9 +98,11 @@ def login(
 @router.get("/profile", summary="Get current user",  description="Get User Login With Token Bearier", response_model=config.SingleDataResponseModel[UserSchema.SignedUser], responses={
     422: {
         "model": config.ValidationErrorResponseModel,
+        "description": "Validation error"
     },
     400: {
         "model": config.BadRequestResponseModel,
+        "description": "Bad request"
     }
 })
 def read_profile(user_login: dict = Depends(security.get_current_user)):
